@@ -29,7 +29,8 @@ app.use(session({
 app.use(passport.initialize());
 app.use(passport.session());
 
-app.get("/", (req, res)=> res.render("register"));
+app.get("/", (req, res)=> res.render("dashbord", {user: req.user}));
+app.get("/register", (req, res)=> res.render("register"));
 
 // Register User
 app.post('/register', function(req, res){
@@ -88,7 +89,8 @@ passport.deserializeUser(function(id, done) {
 app.post('/login',
   passport.authenticate('local'),
   function(req, res) {
-    res.send(req.user);
+    console.log("New User Logged in :",req.user.username);
+    res.redirect("/");
   }
 );
 
@@ -102,9 +104,9 @@ app.get("/login", (req, res)=> res.render("login"));
 
 // Endpoint to logout
 app.get('/logout', function(req, res){
-  console.log("Success logout",req.user.name);
+  console.log("Success logout",req.user.username);
   req.logout();
-  res.send(null)
+  res.redirect("/");
   
 });
 
