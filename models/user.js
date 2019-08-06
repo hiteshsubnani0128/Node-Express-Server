@@ -15,6 +15,9 @@ var UserSchema = mongoose.Schema({
   },
   name: {
     type: String
+  },
+  image: {
+    type: String
   }
 });
 
@@ -29,8 +32,8 @@ module.exports.createUser = function(newUser, callback){
   });
 }
 
-module.exports.getUserByUsername = function(username, callback){
-    var query = {username: username};
+module.exports.getUserByUsername = function(email, callback){
+    var query = {email: email};
     User.findOne(query, callback);
   }
   

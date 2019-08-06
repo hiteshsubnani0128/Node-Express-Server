@@ -7,6 +7,7 @@ var session = require('express-session');
 var mongoose = require('mongoose');
 var passport = require('passport');
 var User = require('./models/user');
+const auth = require('./auth');
 
 // Conenct to DB
 mongoose.connect('mongodb://localhost:27017/loginapp', {useNewUrlParser: true});
@@ -26,6 +27,7 @@ app.use(session({
 }));
 
 // Passport init
+auth(passport);
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -42,7 +44,8 @@ app.post('/register', function(req, res){
       name: req.body.name,
       email: req.body.email,
       username: req.body.username,
-      password: req.body.password
+      password: req.body.password,
+      image:""
     });
 
     User.createUser(newUser, function(err, user){
@@ -57,8 +60,8 @@ app.post('/register', function(req, res){
 
 var LocalStrategy = require('passport-local').Strategy;
 passport.use(new LocalStrategy(
-  function(username, password, done) {
-    User.getUserByUsername(username, function(err, user){
+  function(email, password, done) {
+    User.getUserByUsername(email, function(err, user){
       if(err) throw err;
       if(!user){
         return done(null, false, {message: 'Unknown User'});
@@ -109,5 +112,26 @@ app.get('/logout', function(req, res){
   res.redirect("/");
   
 });
+
+
+// ===================== GOOGLE AUTH ============================
+
+app.get('/auth/google', passport.authenticate('google', {
+  scope: [
+        'https://www.googleapis.com/auth/userinfo.profile',
+        'https://www.googleapis.com/auth/userinfo.email'
+    ]
+}));
+
+app.get('/login/google/callback',
+    passport.authenticate('google', {failureRedirect:'/'}),
+    (req, res) => {
+        console.log(req.user.profile.emails[0].value);
+        
+        req.session.token = req.user.token;
+        res.redirect('/');
+    }
+);
+
 
 app.listen(3000, () => console.log('App listening on port 3000!'))
